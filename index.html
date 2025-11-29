@@ -1,372 +1,166 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Sonora UC3M · Parrilla</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Parrilla · Sonora UC3M</title>
 
-  <style>
-    :root {
-      --sonora-red: #be1622;
-      --sonora-red-dark: #8c1019;
-      --bg-deep: #050307;
-      --card-bg: rgba(0,0,0,0.6);
-      --card-border: rgba(255,255,255,0.16);
-      --text-main: #ffffff;
-      --text-muted: #d4d4d4;
-      --text-soft: #a3a3a3;
-    }
+<style>
+:root{
+  --sonora-red:#be1622;
+  --dark-bg:#050307;
+  --card:rgba(255,255,255,0.05);
+  --border:rgba(255,255,255,0.13);
+  --text:#fff;
+  --soft:#bfbfbf;
+}
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+*{margin:0;padding:0;box-sizing:border-box;}
+body{
+  font-family:"Helvetica Now Display","Helvetica Neue",Helvetica,system-ui,sans-serif;
+  background:radial-gradient(circle at top,var(--sonora-red) 0%,var(--dark-bg) 65%);
+  color:var(--text);
+  display:flex;justify-content:center;
+}
 
-    body {
-      min-height: 100vh;
-      font-family: "Helvetica Now Display", "Helvetica Neue", Helvetica,
-        system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-      background:
-        radial-gradient(circle at top, rgba(190,22,34,0.85) 0%, transparent 55%),
-        radial-gradient(circle at bottom, #000000 0%, #050307 50%, #000000 100%);
-      color: var(--text-main);
-      display: flex;
-      justify-content: center;
-    }
+/* LAYOUT */
+.page{
+  width:100%;max-width:500px;
+  padding:20px 16px 100px;
+  text-align:center;
+}
 
-    .page {
-      width: 100%;
-      max-width: 480px;         /* móvil primero */
-      padding: 16px 14px 90px;
-    }
+/* LOGO */
+.logo{
+  width:72%;
+  margin:0 auto 18px;
+}
 
-    header {
-      text-align: left;
-      margin-bottom: 16px;
-    }
+/* PARRILLA */
+.day{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:14px 16px;
+  margin-bottom:12px;
+}
 
-    .brand-main {
-      font-size: 1.4rem;
-      font-weight: 800;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-    }
+.day-title{
+  font-size:0.9rem;
+  font-weight:700;
+  letter-spacing:0.12em;
+  margin-bottom:6px;
+}
 
-    .brand-sub {
-      font-size: 0.8rem;
-      color: var(--text-muted);
-      margin-top: 4px;
-    }
+.slot{
+  border-top:1px solid rgba(255,255,255,0.07);
+  padding:8px 0;
+}
+.slot:first-of-type{border-top:none;}
 
-    .hint {
-      font-size: 0.76rem;
-      color: var(--text-soft);
-      margin: 10px 0 4px;
-    }
+.time{
+  font-size:0.78rem;
+  color:var(--soft);
+}
+.title{
+  font-size:0.9rem;
+  font-weight:600;
+  margin-top:2px;
+}
 
-    /* Parrilla */
+/* DIFERIDO */
+.od-btn{
+  display:inline-block;
+  margin-top:6px;
+  background:#fff;
+  color:var(--sonora-red);
+  font-size:0.76rem;
+  font-weight:700;
+  padding:4px 12px;
+  border-radius:999px;
+}
 
-    .day-card {
-      background: var(--card-bg);
-      border-radius: 16px;
-      border: 1px solid var(--card-border);
-      padding: 10px 12px;
-      margin-bottom: 12px;
-      box-shadow: 0 10px 26px rgba(0,0,0,0.7);
-    }
+/* LIVE BTN */
+.live{
+  position:fixed;
+  bottom:16px;right:50%;
+  transform:translateX(50%);
+  background:#fff;
+  color:var(--sonora-red);
+  font-size:0.82rem;
+  font-weight:800;
+  padding:10px 18px;
+  border-radius:999px;
+}
 
-    .day-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: baseline;
-      margin-bottom: 6px;
-    }
-
-    .day-name {
-      font-size: 0.9rem;
-      text-transform: uppercase;
-      letter-spacing: 0.16em;
-      font-weight: 700;
-    }
-
-    .day-tag {
-      font-size: 0.72rem;
-      color: var(--text-soft);
-    }
-
-    .slot {
-      display: flex;
-      flex-direction: column;
-      padding: 8px 0;
-      border-top: 1px solid rgba(255,255,255,0.06);
-      row-gap: 4px;
-    }
-
-    .slot:first-of-type {
-      border-top: none;
-      padding-top: 4px;
-    }
-
-    .slot-time {
-      font-size: 0.82rem;
-      color: var(--text-soft);
-      font-weight: 600;
-    }
-
-    .slot-title {
-      font-size: 0.9rem;
-      font-weight: 600;
-    }
-
-    .slot-actions {
-      margin-top: 4px;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-    }
-
-    .pill-link {
-      font-size: 0.74rem;
-      padding: 4px 10px;
-      border-radius: 999px;
-      background: #ffffff;
-      color: var(--sonora-red-dark);
-      font-weight: 600;
-      text-decoration: none;
-    }
-
-    .pill-link:hover {
-      filter: brightness(1.05);
-    }
-
-    .empty-msg {
-      font-size: 0.82rem;
-      color: var(--text-soft);
-      padding: 12px 0 4px;
-    }
-
-    footer {
-      margin-top: 12px;
-      text-align: center;
-      font-size: 0.78rem;
-      color: var(--text-soft);
-    }
-
-    .live-btn {
-      margin: 10px auto 6px;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 10px 18px;
-      border-radius: 999px;
-      background: #ffffff;
-      color: var(--sonora-red-dark);
-      font-size: 0.84rem;
-      font-weight: 700;
-      text-decoration: none;
-      box-shadow: 0 10px 24px rgba(0,0,0,0.45);
-    }
-
-    .live-dot {
-      width: 9px;
-      height: 9px;
-      border-radius: 999px;
-      background: #00ff7b;
-      box-shadow: 0 0 0 4px rgba(0,255,123,0.32);
-    }
-
-    @media (min-width: 640px) {
-      .page {
-        max-width: 520px;
-      }
-    }
-  </style>
+</style>
 </head>
 <body>
-  <div class="page">
-    <header>
-      <div class="brand-main">SONORA UC3M</div>
-      <div class="brand-sub">Parrilla de emisión · Programas originales</div>
-    </header>
 
-    <p class="hint">Consulta lo que viene ahora en la radio y, si quieres, escucha los programas en diferido mientras esperas.</p>
+<div class="page">
 
-    <div id="parrilla">
-      <!-- JS rellena aquí la programación -->
-    </div>
+  <!-- LOGO -->
+  <img src="sonora_2.1_blanco.png" class="logo">
 
-    <a class="live-btn" href="https://radio.radiobot.org/public/sonora" target="_blank" rel="noopener">
-      <span class="live-dot"></span>
-      <span>Escuchar emisión en directo</span>
-    </a>
+  <div id="list">Cargando parrilla…</div>
 
-    <footer>
-      Sonora UC3M · La radio de la Universidad Carlos III de Madrid
-    </footer>
-  </div>
+  <a href="https://radio.radiobot.org/public/sonora" target="_blank" class="live">Escuchar en directo</a>
 
-  <script>
-    // ID y nombres de hojas (los mismos que en tu programación principal)
-    const SHEET_ID        = "1g9f3Ue9GtdaTbpxp3DCXncrNPhjnHPk0m9QTXdfSAxM";
-    const ODF_SHEET_NAME  = "OnDemand";
-    const LIVE_SHEET_NAME = "Directo";
+</div>
 
-    function gvizUrl(sheetName) {
-      return `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheetName)}`;
-    }
+<script>
+/* GOOGLE SHEETS */
+const SHEET="1g9f3Ue9GtdaTbpxp3DCXncrNPhjnHPk0m9QTXdfSAxM";
+const LIVE="Directo",OD="OnDemand";
 
-    async function fetchSheet(sheetName) {
-      const res  = await fetch(gvizUrl(sheetName));
-      const text = await res.text();
-      const json = JSON.parse(text.substr(47).slice(0, -2)); // recorta wrapper de gviz
-      const rows = json.table.rows || [];
-      return rows.map(r => (r.c || []).map(c => (c && c.v) ? String(c.v) : ""));
-    }
+const URL=s=>`https://docs.google.com/spreadsheets/d/${SHEET}/gviz/tq?tqx=out:json&sheet=${s}`;
 
-    function normalizaNombre(nombre) {
-      return nombre.trim().toLowerCase();
-    }
+async function load(){
+  const L=await fetch(URL(LIVE)).then(r=>r.text());
+  const O=await fetch(URL(OD)).then(r=>r.text());
 
-    function primeraPalabraDia(dia) {
-      return dia.trim().toLowerCase().split(/\s+/)[0]; // "Martes 24" -> "martes"
-    }
+  const live=JSON.parse(L.substr(47).slice(0,-2)).table.rows.slice(1).map(r=>r.c.map(c=>c?.v+""));
+  const ond=JSON.parse(O.substr(47).slice(0,-2)).table.rows.slice(1).map(r=>r.c.map(c=>c?.v+""));
 
-    async function loadParrilla() {
-      const cont = document.getElementById("parrilla");
-      cont.innerHTML = "<div class='empty-msg'>Cargando parrilla...</div>";
+  const ondMap={};
+  ond.forEach(r=>ondMap[r[0]?.toLowerCase()]={spotify:r[2],ivoox:r[3],yt:r[4]});
 
-      try {
-        const [onDemandRows, liveRows] = await Promise.all([
-          fetchSheet(ODF_SHEET_NAME),
-          fetchSheet(LIVE_SHEET_NAME),
-        ]);
+  const Days={};
+  live.forEach(([d,h,p])=>{
+    if(!d||!h||!p)return;
+    const key=d.toLowerCase().split(" ")[0];
+    Days[key] ??={day:d,programs:[]};
+    Days[key].programs.push({h,p});
+  });
 
-        // --- Mapa de programas en diferido por nombre normalizado ---
-        const onDemandByName = {};
-        onDemandRows.slice(1).forEach(cols => {
-          const [nombre, , spotify, ivoox, youtube] = cols;
-          if (!nombre) return;
-          const key = normalizaNombre(nombre);
-          onDemandByName[key] = { nombre, spotify, ivoox, youtube };
-        });
+  const box=document.getElementById("list");
+  box.innerHTML="";
 
-        // --- Programación en directo agrupada por día ---
-        const byDay = {};
-        liveRows.slice(1).forEach(cols => {
-          const [diaRaw, horaRaw, programaRaw] = cols;
-          if (!diaRaw || !horaRaw || !programaRaw) return;
+  Object.keys(Days).sort().forEach(k=>{
+    const card=document.createElement("div");
+    card.className="day";
 
-          const diaKey  = primeraPalabraDia(diaRaw);
-          const diaName = diaKey.charAt(0).toUpperCase() + diaKey.slice(1); // "martes"
-          const programa = programaRaw.trim();
+    card.innerHTML=`<div class="day-title">${Days[k].day.toUpperCase()}</div>`;
 
-          if (!byDay[diaKey]) {
-            byDay[diaKey] = {
-              label: diaName,
-              slots: []
-            };
-          }
+    Days[k].programs.forEach(s=>{
+      const div=document.createElement("div");
+      div.className="slot";
+      div.innerHTML=`<div class="time">${s.h}</div><div class="title">${s.p}</div>`;
 
-          byDay[diaKey].slots.push({
-            hora: horaRaw.trim(),
-            programa
-          });
-        });
-
-        cont.innerHTML = "";
-
-        const dayKeys = Object.keys(byDay);
-        if (!dayKeys.length) {
-          cont.innerHTML = "<div class='empty-msg'>No hay horarios configurados todavía.</div>";
-          return;
-        }
-
-        // Ordenamos días de una forma razonable (Lunes->Domingo)
-        const order = ["lunes","martes","miercoles","miércoles","jueves","viernes","sabado","sábado","domingo"];
-        dayKeys.sort((a,b) => {
-          const ia = order.indexOf(a);
-          const ib = order.indexOf(b);
-          if (ia === -1 && ib === -1) return a.localeCompare(b);
-          if (ia === -1) return 1;
-          if (ib === -1) return -1;
-          return ia - ib;
-        });
-
-        dayKeys.forEach(key => {
-          const day = byDay[key];
-          const card = document.createElement("section");
-          card.className = "day-card";
-
-          const header = document.createElement("div");
-          header.className = "day-header";
-
-          const name = document.createElement("div");
-          name.className = "day-name";
-          name.textContent = day.label;
-
-          const tag = document.createElement("div");
-          tag.className = "day-tag";
-          tag.textContent = "Programación";
-
-          header.appendChild(name);
-          header.appendChild(tag);
-          card.appendChild(header);
-
-          if (!day.slots.length) {
-            const msg = document.createElement("div");
-            msg.className = "empty-msg";
-            msg.textContent = "No hay programas configurados para este día.";
-            card.appendChild(msg);
-          } else {
-            day.slots.forEach(slot => {
-              const slotEl = document.createElement("article");
-              slotEl.className = "slot";
-
-              const timeEl = document.createElement("div");
-              timeEl.className = "slot-time";
-              timeEl.textContent = slot.hora;
-
-              const titleEl = document.createElement("div");
-              titleEl.className = "slot-title";
-              titleEl.textContent = slot.programa;
-
-              slotEl.appendChild(timeEl);
-              slotEl.appendChild(titleEl);
-
-              // ¿Hay programa en diferido con el mismo nombre?
-              const ondemand = onDemandByName[normalizaNombre(slot.programa)];
-              if (ondemand) {
-                const actions = document.createElement("div");
-                actions.className = "slot-actions";
-
-                let linkUrl = ondemand.spotify || ondemand.ivoox || ondemand.youtube;
-                if (linkUrl) {
-                  const a = document.createElement("a");
-                  a.href = linkUrl;
-                  a.target = "_blank";
-                  a.rel   = "noopener";
-                  a.className = "pill-link";
-                  a.textContent = "Escuchar en diferido";
-                  actions.appendChild(a);
-                  slotEl.appendChild(actions);
-                }
-              }
-
-              card.appendChild(slotEl);
-            });
-          }
-
-          cont.appendChild(card);
-        });
-
-      } catch (err) {
-        console.error(err);
-        cont.innerHTML = "<div class='empty-msg'>No se ha podido cargar la parrilla ahora mismo.</div>";
+      const found=ondMap[s.p.toLowerCase()];
+      const url=found?.spotify||found?.ivoox||found?.yt;
+      if(url){
+        div.innerHTML+=`<a class="od-btn" target="_blank" href="${url}">Diferido</a>`;
       }
-    }
 
-    document.addEventListener("DOMContentLoaded", loadParrilla);
-  </script>
+      card.appendChild(div);
+    });
+
+    box.appendChild(card);
+  });
+}
+
+load();
+</script>
 </body>
 </html>
