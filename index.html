@@ -47,7 +47,7 @@ body{
   display:block;
 }
 
-/* TARJETAS DÍA */
+/* TARJETAS */
 .day{
   background:var(--card);
   border:1px solid var(--border);
@@ -72,198 +72,124 @@ body{
 .slot:first-of-type{border-top:none;}
 
 .time{
-  font-size:0.78rem;
-  color:var(--soft);
+  font-size:0.78rem;color:var(--soft);
 }
 .title{
-  font-size:0.92rem;
-  font-weight:600;
-  margin-top:2px;
+  font-size:0.92rem;font-weight:600;margin-top:2px;
 }
 
 /* BOTÓN DIFERIDO */
 .od-btn{
-  display:inline-block;
-  margin-top:6px;
-  background:#ffffff;
-  color:var(--sonora-red);
-  font-size:0.74rem;
-  font-weight:700;
-  padding:4px 12px;
-  border-radius:999px;
-  text-decoration:none;
+  display:inline-block;margin-top:6px;
+  background:#ffffff;color:var(--sonora-red);
+  font-size:0.74rem;font-weight:700;
+  padding:4px 12px;border-radius:999px;text-decoration:none;
 }
 
-/* BOTÓN ESCUCHAR EN DIRECTO (FLOTANTE) */
+/* BOTÓN DIRECTO */
 .live{
-  position:fixed;
-  left:50%;
-  bottom:18px;
-  transform:translateX(-50%);
-  background:#ffffff;
-  color:var(--sonora-red);
-  font-size:0.86rem;
-  font-weight:800;
-  padding:10px 22px;
-  border-radius:999px;
-  display:inline-flex;
-  align-items:center;
-  gap:8px;
+  position:fixed;left:50%;bottom:18px;transform:translateX(-50%);
+  background:#ffffff;color:var(--sonora-red);
+  font-size:0.86rem;font-weight:800;
+  padding:10px 22px;border-radius:999px;
+  display:inline-flex;align-items:center;gap:8px;
   box-shadow:0 10px 28px rgba(0,0,0,0.5);
   text-decoration:none;
 }
-
 .live-dot{
-  width:9px;
-  height:9px;
-  border-radius:999px;
-  background:#00ff7b;
-  box-shadow:0 0 0 4px rgba(0,255,123,0.3);
+  width:9px;height:9px;border-radius:999px;
+  background:#00ff7b;box-shadow:0 0 0 4px rgba(0,255,123,0.3);
 }
 
-/* DESKTOP – solo para que no se vea gigante */
-@media (min-width:900px){
-  .page{
-    padding-top:32px;
-  }
-}
+@media (min-width:900px){ .page{padding-top:32px;} }
 </style>
 </head>
 <body>
 
 <div class="page">
-  <!-- LOGO SONORA -->
-  <img src="sonora_2.1_blanco.png" alt="Sonora UC3M" class="logo">
-
-  <!-- CONTENEDOR PARRILLA -->
+  <img src="sonora_2.1_blanco.png" class="logo">
   <div id="list">Cargando parrilla…</div>
 </div>
 
-<!-- BOTÓN DIRECTO -->
 <a href="https://radio.radiobot.org/public/sonora" target="_blank" class="live">
-  <span class="live-dot"></span>
-  <span>Escuchar en directo</span>
+  <span class="live-dot"></span> Escuchar en directo
 </a>
 
 <script>
-/* CONFIG GOOGLE SHEETS */
-const SHEET_ID   = "1g9f3Ue9GtdaTbpxp3DCXncrNPhjnHPk0m9QTXdfSAxM";
-const LIVE_SHEET = "Directo";
-const ODF_SHEET  = "OnDemand";
+/* SHEETS */
+const SHEET_ID="1g9f3Ue9GtdaTbpxp3DCXncrNPhjnHPk0m9QTXdfSAxM";
+const LIVE_SHEET="Directo"; const ODF_SHEET="OnDemand";
 
-function gvizUrl(sheet){
-  return `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheet)}`;
-}
+const gvizUrl = s=>`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${s}`;
 
-/* LECTURA BÁSICA GVIZ */
-async function fetchSheet(sheet){
-  const res  = await fetch(gvizUrl(sheet));
-  const text = await res.text();
-  const json = JSON.parse(text.substr(47).slice(0,-2));
-  return (json.table.rows || []).map(r => (r.c || []).map(c => c && c.v ? String(c.v) : ""));
+async function fetchSheet(name){
+  const res=await fetch(gvizUrl(name));
+  const txt=await res.text();
+  const json=JSON.parse(txt.substr(47).slice(0,-2));
+  return json.table.rows.map(r=>r.c.map(c=>c?.v?String(c.v):""));
 }
 
 async function loadParrilla(){
-  const container = document.getElementById("list");
-  container.textContent = "Cargando parrilla…";
+  const cont=document.getElementById("list");
+  cont.textContent="Cargando parrilla…";
 
   try{
-    const [liveRows, odRows] = await Promise.all([
-      fetchSheet(LIVE_SHEET),
-      fetchSheet(ODF_SHEET)
-    ]);
+    const [live,od]=await Promise.all([fetchSheet(LIVE_SHEET),fetchSheet(ODF_SHEET)]);
 
-    // mapa de programas en diferido
-    const onDemandMap = {};
-    odRows.slice(1).forEach(cols => {
-      const [name, , spotify, ivoox, youtube] = cols;
-      if(!name) return;
-      const key = name.toLowerCase();
-      onDemandMap[key] = spotify || ivoox || youtube || "";
+    const odMap={};
+    od.slice(1).forEach(([n,,sp,iv,yt])=>{
+      if(n) odMap[n.toLowerCase()]=sp||iv||yt||"";
     });
 
-    // agrupar por día
-    const days = {};
-    liveRows.slice(1).forEach(cols => {
-      const [diaRaw, horaRaw, programaRaw] = cols;
-      if(!diaRaw || !horaRaw || !programaRaw) return;
-
-      const dia = diaRaw.trim();
-      const key = dia.toLowerCase().split(" ")[0]; // "martes", "jueves"...
-      if(!days[key]) days[key] = {label: dia, slots: []};
-      days[key].slots.push({hora: horaRaw.trim(), programa: programaRaw.trim()});
+    const days={};
+    live.slice(1).forEach(([d,h,p])=>{
+      if(!d||!h||!p)return;
+      const key=d.toLowerCase().split(" ")[0];
+      if(!days[key])days[key]={label:d,slots:[]};
+      days[key].slots.push({hora:h.trim(),programa:p.trim()});
     });
 
-    // orden manual: queremos martes antes que jueves
-    const dayOrder = ["lunes","martes","miércoles","miercoles","jueves","viernes","sábado","sabado","domingo"];
+    const order=["lunes","martes","miercoles","miércoles","jueves","viernes","sabado","sábado","domingo"];
+    cont.innerHTML="";
 
-    container.innerHTML = "";
+    order.forEach(k=>{
+      if(!days[k])return;
+      const d=days[k];
 
-    dayOrder.forEach(key => {
-      if(!days[key]) return;
-      const day = days[key];
-
-      // ordenar por hora de comienzo
-      day.slots.sort((a,b) => {
-        const getMin = s => {
-          const m = s.hora.match(/(\d{1,2}):(\d{2})/);
-          if(!m) return 0;
-          return parseInt(m[1])*60+parseInt(m[2]);
-        };
-        return getMin(a) - getMin(b);
+      d.slots.sort((a,b)=>{
+        const m=s=>{const x=s.hora.match(/(\d\d):(\d\d)/);return +x[1]*60+ +x[2];};
+        return m(a)-m(b);
       });
 
-      const card = document.createElement("div");
-      card.className = "day";
-
-      const title = document.createElement("div");
-      title.className = "day-title";
-      title.textContent = day.label.toUpperCase();
+      const card=document.createElement("div");card.className="day";
+      const title=document.createElement("div");
+      title.className="day-title";title.textContent=d.label.toUpperCase();
       card.appendChild(title);
 
-      day.slots.forEach(slot => {
-        const row = document.createElement("div");
-        row.className = "slot";
-
-        const t = document.createElement("div");
-        t.className  = "time";
-        t.textContent = slot.hora;
-
-        const n = document.createElement("div");
-        n.className  = "title";
-        n.textContent = slot.programa;
-
-        row.appendChild(t);
-        row.appendChild(n);
-
-        // botón diferido solo si existe coincidencia
-        const url = onDemandMap[slot.programa.toLowerCase()];
+      d.slots.forEach(s=>{
+        const row=document.createElement("div");row.className="slot";
+        row.innerHTML=`<div class="time">${s.hora}</div><div class="title">${s.programa}</div>`;
+        const url=odMap[s.programa.toLowerCase()];
         if(url){
-          const a = document.createElement("a");
-          a.className = "od-btn";
-          a.href   = url;
-          a.target = "_blank";
-          a.textContent = "Diferido";
+          const a=document.createElement("a");
+          a.className="od-btn";a.target="_blank";a.href=url;a.textContent="Diferido";
           row.appendChild(a);
         }
-
         card.appendChild(row);
       });
 
-      container.appendChild(card);
+      cont.appendChild(card);
     });
 
-    if(!container.innerHTML.trim()){
-      container.textContent = "No hay programación cargada.";
-    }
-
-  }catch(e){
-    console.error(e);
-    container.textContent = "No se ha podido cargar la parrilla.";
-  }
+    if(!cont.innerHTML.trim())cont.textContent="Sin programación.";
+  }catch(e){ cont.textContent="Error cargando datos."; }
 }
 
 document.addEventListener("DOMContentLoaded", loadParrilla);
+
+/* 🔥 AUTO-REFRESH CADA 20s 🔥 */
+setInterval(loadParrilla, 20000);
+
 </script>
 </body>
 </html>
